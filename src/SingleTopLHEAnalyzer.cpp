@@ -44,7 +44,7 @@ void SingleTopLHEAnalyzer::Loop()
 
    float weight;
    float sinTheta, cosTheta;
-   float sinThetaStar, cosThetaStar;
+   float sinThetaStar, cosThetaXStar, cosThetaYStar, cosThetaZStar;
    float sinPhiStar, cosPhiStar, PhiStar;
    float lepton_E_Wframe;
    float top_pt, W_pt, lepton_pt;
@@ -58,7 +58,11 @@ void SingleTopLHEAnalyzer::Loop()
    tOutput->Branch("weight",&weight,"weight/F");
    tOutput->Branch("cosTheta",&cosTheta,"cosTheta/F");
    tOutput->Branch("sinTheta",&sinTheta,"sinTheta/F");
-   tOutput->Branch("cosThetaStar",&cosThetaStar,"cosThetaStar/F");
+
+   tOutput->Branch("cosThetaZStar",&cosThetaZStar,"cosThetaZStar/F");
+   tOutput->Branch("cosThetaXStar",&cosThetaXStar,"cosThetaXStar/F");
+   tOutput->Branch("cosThetaYStar",&cosThetaYStar,"cosThetaYStar/F");
+
    tOutput->Branch("sinThetaStar",&sinThetaStar,"sinThetaStar/F");
    tOutput->Branch("cosPhiStar",&cosPhiStar,"cosPhiStar/F");
    tOutput->Branch("sinPhiStar",&sinPhiStar,"sinPhiStar/F");
@@ -140,11 +144,12 @@ void SingleTopLHEAnalyzer::Loop()
 
 	  /* SELECTIONS */
     // M2 selection
-  	if ((Pl.Pt()<35 || TMath::Abs(Pl.Eta())>1.479) && Pl_ID==11) continue; //Electron
-    if ((Pl.Pt()<26 || TMath::Abs(Pl.Eta())>2.4) && Pl_ID==13) continue; //Muon
-	  if (Pqspec.Pt()<40 || TMath::Abs(Pqspec.Eta())>4.7) continue; //Jet 1st selection
-    if (abs(Pqspec.Eta()) < 3.0 && 2.7 < abs(Pqspec.Eta()) && Pqspec.Pt() < 60) continue; //Jet 2nd selection
-	  if (Pb.Pt()<40 || TMath::Abs(Pb.Eta())>2.4) continue;
+  	if ((Pl.Pt()<=32 || TMath::Abs(Pl.Eta())>=2.1) && Pl_ID==11) continue; //Electron
+    if ((Pl.Pt()<=30 || TMath::Abs(Pl.Eta())>=2.4) && Pl_ID==13) continue; //Muon
+	  if (Pqspec.Pt()<=40 || TMath::Abs(Pqspec.Eta())>=4.7) continue; //Jet 1st selection
+    if (abs(Pqspec.Eta()) >= 2.4 && Pqspec.Pt() <= 60) continue; //Jet 2nd selection
+	  if (Pb.Pt()<=40 || TMath::Abs(Pb.Eta())>=2.5) continue;
+	if (Pb.Pt()<=60 || TMath::Abs(Pb.Eta())>=2.4) continue;
 
 
     // STreco selection
@@ -157,46 +162,28 @@ void SingleTopLHEAnalyzer::Loop()
 
 	  /* ANGLE RECONSTRUCTION */
 
-	  TVector3 InvTopBoost;  InvTopBoost.SetXYZ(-Ptop.Px()/Ptop.E(),-Ptop.Py()/Ptop.E(),-Ptop.Pz()/Ptop.E());
-	  TVector3 InvWBoost; InvWBoost.SetXYZ(-Pw.Px()/Pw.E(),-Pw.Py()/Pw.E(),-Pw.Pz()/Pw.E());
+	  TVector3 InvTopBoost;  
+	  InvTopBoost.SetXYZ(-Ptop.Px()/Ptop.E(),-Ptop.Py()/Ptop.E(),-Ptop.Pz()/Ptop.E());
 
-	  Pw.Boost(InvTopBoost);
-	  Pb.Boost(InvTopBoost);
+	          
+           TVector3 lightQ = Pqspec.Vect().Unit() * Pqspec.Z();
+
+	  
+	  Pl.Boost(InvTopBoost);
 	  Pqspec.Boost(InvTopBoost);
-	  //cout << "Top rest frame, W: Px="<<Pw.Px()<<" Py="<<Pw.Py()<<" Pz="<<Pw.Pz()<<endl;
-	  //cout << "Top rest frame, b: Px="<<Pb.Px()<<" Py="<<Pb.Py()<<" Pz="<<Pb.Pz()<<endl;
-	  //cout << "Top rest frame, q spec: Px="<<Pqspec.Px()<<" Py="<<Pqspec.Py()<<" Pz="<<Pqspec.Pz()<<endl;
+	  lightQ = lightQ + InvTopBoost;
 
-	  TVector3 Zdir = Pw.Vect().Unit();
-	  TVector3 PqspecUnit = Pqspec.Vect().Unit();
-	  TVector3 Ydir = PqspecUnit.Cross(Zdir).Unit();
+	  TVector3 lightQunit = lightQ.Unit();
+
+	  TVector3 Zdir = Pqspec.Vect().Unit();
+	  TVector3 Ydir = -lightQunit.Cross(Zdir).Unit();
 	  TVector3 Xdir = Ydir.Cross(Zdir);
+	  TVector3 leptonUnitary = Pl.Vect().Unit();
 
-	  sinTheta = PqspecUnit.Cross(Zdir).Mag();
-	  cosTheta = PqspecUnit.Dot(Zdir);
-	  if (sinTheta<0) sinTheta=-sinTheta;
-	  //cout << "Angle Theta: cosTheta="<<cosTheta<<" sinTheta="<<sinTheta<<endl;
+	  cosThetaZStar = leptonUnitary.Dot(Zdir);
+	  cosThetaYStar = leptonUnitary.Dot(Ydir);
+          cosThetaXStar = leptonUnitary.Dot(Xdir);
 
-	  //cout << "Top rest frame, Xdir: X="<<Xdir.X()<<" Y="<<Xdir.Y()<<" Z="<<Xdir.Z()<< " Mag="<< Xdir.Mag() <<endl;
-	  //cout << "Top rest frame, Ydir: X="<<Ydir.X()<<" Y="<<Ydir.Y()<<" Z="<<Ydir.Z()<< " Mag="<< Ydir.Mag() <<endl;
-	  //cout << "Top rest frame, Zdir: X="<<Zdir.X()<<" Y="<<Zdir.Y()<<" Z="<<Zdir.Z()<< " Mag="<< Zdir.Mag() <<endl;
-
-	  Pl.Boost(InvWBoost);
-	  lepton_E_Wframe = Pl.E();
-
-	  TVector3 PlUnit = Pl.Vect().Unit();
-	  cosThetaStar = PlUnit.Dot(Zdir);
-	  sinThetaStar = PlUnit.Cross(Zdir).Mag();
-	  if (sinThetaStar<0) sinThetaStar=-sinThetaStar;
-	  //cout << "Angle ThetaStar: cosThetaStar="<<cosThetaStar<<" sinThetaStar="<<sinThetaStar<<endl;
-
-	  TVector3 PlUnit_PlaneXY = (PlUnit - (PlUnit.Dot(Zdir))*Zdir).Unit();
-	  cosPhiStar = PlUnit_PlaneXY.Dot(Xdir);
-	  sinPhiStar = PlUnit_PlaneXY.Dot(Ydir);
-      //PhiStar;// = TMath::ACos(cosPhiStar);
-	  if (sinPhiStar>0) PhiStar = TMath::ACos(cosPhiStar);
-	  if (sinPhiStar<0) PhiStar = 2*TMath::Pi()-TMath::ACos(cosPhiStar);
-	  //cout << "Angle PhiStar: cosPhiStar="<<cosPhiStar<<" sinPhiStar="<<sinPhiStar<<" PhiStar="<<PhiStar<<endl;
    
     top_pt = Ptop.Pt();
     W_pt = Pw.Pt();

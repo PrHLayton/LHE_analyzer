@@ -14,12 +14,12 @@ using namespace std;
 
 int main()
 {
-  int nSamples = 20;
+  int nSamples = 1;
   int modes = 1;
   string* suffix = new string[nSamples];
   string* prefix = new string[modes];
 
-prefix[0]=""; // Name of input File
+prefix[0]="ST_t_channel_atLO_1Mevents_cbwi_p2_MG5_dim6top"; // Name of input File
 
 suffix[0] ="";
 
@@ -32,11 +32,11 @@ suffix[0] ="";
     for (int i=0; i<nSamples; i++)
     {
       string nb = to_string(i+1);
-      suffix[i]= nb;
+      suffix[i]= "";
       cout<<"Cooking "+prefix[j] + suffix[i]+".root"<<endl;
 
      ///////////////////////////Choose Input Path files//////////////////////////////////////
-     string inputPath = "";
+     string inputPath = "/gridgroup/cms/fillaudeau/eft_lhe_analyzer/data/madgraph/";
      string inputName = inputPath + prefix[j] + suffix[i] + ".root";
       
       
@@ -47,7 +47,7 @@ suffix[0] ="";
      singleTopLHEAnalyzer[i]->Loop();
       
      ///////////////////////////Choose Output Path files//////////////////////////////////////
-     string outputPath = "";
+     string outputPath = "/gridgroup/cms/fillaudeau/eft_lhe_analyzer/data/madgraph/output/";
      string commandline = "mv output.root " + outputPath + outputName;
 
      system(commandline.c_str());
