@@ -19,7 +19,7 @@ int main()
   string* suffix = new string[nSamples];
   string* prefix = new string[modes];
 
-prefix[0]="ST_t_channel_atLO_1Mevents_cbwi_p2_MG5_dim6top"; // Name of input File
+prefix[0]="ST_t_channel_atLO_500kevents_cbw_m2_MG5_dim6top"; // Name of input File
 
 suffix[0] ="";
 

@@ -50,12 +50,15 @@ void SingleTopLHEAnalyzer::Loop()
    float top_pt, W_pt, lepton_pt;
    float top_mass, W_mass, W_transverse_mass;
    float nature_lepton;
+   double sumOf_LHEweights = 0.0;
+
 
    TFile* fOutput = new TFile("output.root","RECREATE");
    TTree* tOutput = new TTree("Tree","Tree");
 
    tOutput->Branch("nature_lepton",&nature_lepton,"nature_lepton/F");
    tOutput->Branch("weight",&weight,"weight/F");
+   tOutput->Branch("sumOf_LHEweights",&sumOf_LHEweights,"sumOf_LHEweights/F");
    tOutput->Branch("cosTheta",&cosTheta,"cosTheta/F");
    tOutput->Branch("sinTheta",&sinTheta,"sinTheta/F");
 
@@ -91,6 +94,12 @@ void SingleTopLHEAnalyzer::Loop()
    TLorentzVector Pnu;
    TLorentzVector Pqspec;
    double Pl_ID;
+
+     int value = 0;
+
+	cout << "Type 1 for Z in the W direction or 2 for Z in the spectator quark direction" << endl;		//ask the user for the reference frame
+	cin >> value;
+
 
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) 
@@ -141,6 +150,7 @@ void SingleTopLHEAnalyzer::Loop()
     Ptop = Pb + Pl + Pnu;
 
 	  weight = Event_Weight[jentry];
+	  sumOf_LHEweights += weight;
 
 	  /* SELECTIONS */
     // M2 selection
@@ -162,12 +172,31 @@ void SingleTopLHEAnalyzer::Loop()
 
 	  /* ANGLE RECONSTRUCTION */
 
+
 	  TVector3 InvTopBoost;  
 	  InvTopBoost.SetXYZ(-Ptop.Px()/Ptop.E(),-Ptop.Py()/Ptop.E(),-Ptop.Pz()/Ptop.E());
 
-	          
-           TVector3 lightQ = Pqspec.Vect().Unit() * Pqspec.Z();
 
+if(value == 1){				//calculation of cosines in the old reference frame
+
+          Pw.Boost(InvTopBoost);
+          Pl.Boost(InvTopBoost);
+          Pqspec.Boost(InvTopBoost);
+
+	  TVector3 Zdir = Pw.Vect().Unit();
+   	  TVector3 qSpecUnit = Pqspec.Vect().Unit();
+   	  TVector3 Ydir = qSpecUnit.Cross(Zdir).Unit();
+   	  TVector3 Xdir = Ydir.Cross(Zdir);
+   	  TVector3 leptonUnitary = Pl.Vect().Unit();
+
+	  cosThetaZStar = leptonUnitary.Dot(Zdir);
+	  cosThetaYStar = leptonUnitary.Dot(Ydir);
+          cosThetaXStar = leptonUnitary.Dot(Xdir);
+}
+
+else{							//calculation of cosines in the new reference frame
+
+          TVector3 lightQ = Pqspec.Vect().Unit() * Pqspec.Z();
 	  
 	  Pl.Boost(InvTopBoost);
 	  Pqspec.Boost(InvTopBoost);
@@ -183,7 +212,7 @@ void SingleTopLHEAnalyzer::Loop()
 	  cosThetaZStar = leptonUnitary.Dot(Zdir);
 	  cosThetaYStar = leptonUnitary.Dot(Ydir);
           cosThetaXStar = leptonUnitary.Dot(Xdir);
-
+}
    
     top_pt = Ptop.Pt();
     W_pt = Pw.Pt();
