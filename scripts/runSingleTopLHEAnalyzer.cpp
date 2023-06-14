@@ -19,7 +19,7 @@ int main()
   string* suffix = new string[nSamples];
   string* prefix = new string[modes];
 
-prefix[0]="ST_t_channel_atLO_500kevents_cbw_m2_MG5_dim6top"; // Name of input File
+prefix[0]="R_pol_ST"; // Name of input File
 
 suffix[0] ="";
 
@@ -40,7 +40,7 @@ suffix[0] ="";
      string inputName = inputPath + prefix[j] + suffix[i] + ".root";
       
       
-     string outputName = "output_" +prefix[j] + suffix[i] +  ".root";   
+     string outputName = "ZW_output_" +prefix[j] + suffix[i] +  ".root";   
      fInput[i] = new TFile(inputName.c_str(),"READ");
      tInput[i] = (TTree*) fInput[i]->Get("LHEF");
      singleTopLHEAnalyzer[i] = new SingleTopLHEAnalyzer(tInput[i]);

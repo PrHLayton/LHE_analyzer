@@ -97,7 +97,7 @@ void SingleTopLHEAnalyzer::Loop()
 
      int value = 0;
 
-	cout << "Type 1 for Z in the W direction or 2 for Z in the spectator quark direction" << endl;		//ask the user for the reference frame
+	cout << "Type 1 for the old reference frame (Z=W) or 2 for the new reference frame (Z=qSpec)" << endl;		//ask the user for the reference frame
 	cin >> value;
 
 
@@ -154,12 +154,12 @@ void SingleTopLHEAnalyzer::Loop()
 
 	  /* SELECTIONS */
     // M2 selection
-  	if ((Pl.Pt()<=32 || TMath::Abs(Pl.Eta())>=2.1) && Pl_ID==11) continue; //Electron
-    if ((Pl.Pt()<=30 || TMath::Abs(Pl.Eta())>=2.4) && Pl_ID==13) continue; //Muon
-	  if (Pqspec.Pt()<=40 || TMath::Abs(Pqspec.Eta())>=4.7) continue; //Jet 1st selection
-    if (abs(Pqspec.Eta()) >= 2.4 && Pqspec.Pt() <= 60) continue; //Jet 2nd selection
-	  if (Pb.Pt()<=40 || TMath::Abs(Pb.Eta())>=2.5) continue;
-	if (Pb.Pt()<=60 || TMath::Abs(Pb.Eta())>=2.4) continue;
+ // 	if ((Pl.Pt()<=32 || TMath::Abs(Pl.Eta())>=2.1) && Pl_ID==11) continue; //Electron
+ //   if ((Pl.Pt()<=30 || TMath::Abs(Pl.Eta())>=2.4) && Pl_ID==13) continue; //Muon
+	//  if (Pqspec.Pt()<=40 || TMath::Abs(Pqspec.Eta())>=4.7) continue; //Jet 1st selection
+ //   if (abs(Pqspec.Eta()) >= 2.4 && Pqspec.Pt() <= 60) continue; //Jet 2nd selection
+  //	  if (Pb.Pt()<=40 || TMath::Abs(Pb.Eta())>=2.5) continue; 
+  //	if (Pb.Pt()<=60 || TMath::Abs(Pb.Eta())>=2.4) continue;
 
 
     // STreco selection
@@ -196,7 +196,7 @@ if(value == 1){				//calculation of cosines in the old reference frame
 
 else{							//calculation of cosines in the new reference frame
 
-          TVector3 lightQ = Pqspec.Vect().Unit() * Pqspec.Z();
+          TVector3 lightQ = Pqspec.Vect().Unit() * Pqspec.Z();	//define the direction of the light quark as the projection of the spectator quark on the Z axis in the lab frame
 	  
 	  Pl.Boost(InvTopBoost);
 	  Pqspec.Boost(InvTopBoost);
